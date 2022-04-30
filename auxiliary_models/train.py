@@ -7,6 +7,7 @@ from data_loader import *
 from model_conv import *
 
 def main():
+    mode = 'male'
     train_loader = get_loader( '/mnt/data/10708-controllable-generation/data/celeba/img_align_celeba', 
                            '/mnt/data/10708-controllable-generation/data/celeba/list_attr_celeba.txt', 
                            ['Black_Hair', 'Blond_Hair', 'Brown_Hair', 'Male', 'Young'],
@@ -23,6 +24,8 @@ def main():
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
     criterion = torch.nn.CrossEntropyLoss()
     
+    targ_idx = 3 if mode == 'male' else 2
+    
     n_epochs = 10
     for epoch in range(n_epochs):
         
@@ -33,7 +36,7 @@ def main():
         for images, labels in tqdm(train_loader):
             images, labels = images.to(device).float(), labels.to(device).long()
             logits = model(images)
-            targs = labels[:, -2]
+            targs = labels[:, targ_idx] 
             loss = criterion(logits, targs)
             
             optimizer.zero_grad()
@@ -53,7 +56,7 @@ def main():
             images, labels = images.to(device).float(), labels.to(device).long()
             with torch.no_grad():
                 logits = model(images)
-            targs = labels[:, -2]
+            targs = labels[:, targ_idx]
             loss = criterion(logits, targs)
             total_loss += loss.detach().item()
             batch_cnt += 1
